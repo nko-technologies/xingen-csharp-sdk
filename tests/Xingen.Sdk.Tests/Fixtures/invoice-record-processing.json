@@ -1,0 +1,12 @@
+{
+  "id": "inv_01HABC",
+  "status": "processing",
+  "createdAt": "2026-07-08T09:30:00Z",
+  "validationProfile": "EN16931",
+  "invoiceFormat": "UBL",
+  "uploadedBy": "user_abc123",
+  "sandbox": false,
+  "apiKeyId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "canonicalJson": null,
+  "validationResult": null
+}

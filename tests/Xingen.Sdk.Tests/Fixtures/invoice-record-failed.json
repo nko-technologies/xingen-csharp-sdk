@@ -1,0 +1,31 @@
+{
+  "id": "inv_01HDEF",
+  "status": "failed_validation",
+  "createdAt": "2026-07-08T09:30:00Z",
+  "validationProfile": "EN16931",
+  "invoiceFormat": "UBL",
+  "uploadedBy": "user_abc123",
+  "sandbox": false,
+  "apiKeyId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "canonicalJson": {
+    "invoiceNumber": "INV-2024-0099",
+    "currency": "EUR",
+    "lines": [],
+    "notes": []
+  },
+  "validationResult": {
+    "valid": false,
+    "errors": [
+      {
+        "code": "BR-01",
+        "message": "An Invoice shall have a Specification identifier",
+        "field": "specificationId",
+        "suggestion": "Add the CustomizationID element",
+        "documentationUrl": "https://docs.xingen.de/rules/BR-01",
+        "layer": "CORE",
+        "severity": "ERROR"
+      }
+    ],
+    "kositResult": null
+  }
+}

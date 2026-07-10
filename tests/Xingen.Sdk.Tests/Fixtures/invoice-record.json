@@ -1,0 +1,69 @@
+{
+  "id": "inv_01HXYZ",
+  "status": "validated",
+  "createdAt": "2026-07-08T09:30:00Z",
+  "validationProfile": "XRECHNUNG",
+  "invoiceFormat": "UBL",
+  "uploadedBy": "user_abc123",
+  "sandbox": true,
+  "apiKeyId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "canonicalJson": {
+    "invoiceNumber": "INV-2024-0042",
+    "issueDate": "2024-03-15",
+    "dueDate": "2024-04-14",
+    "currency": "EUR",
+    "buyerReference": "991-12345-06",
+    "typeCode": "380",
+    "notes": ["Thank you for your business"],
+    "supplier": {
+      "name": "Acme GmbH",
+      "vatId": "DE123456789",
+      "address": {
+        "streetName": "Hauptstrasse 1",
+        "city": "Berlin",
+        "postalZone": "10115",
+        "countryCode": "DE"
+      },
+      "identifiers": []
+    },
+    "buyer": {
+      "name": "Buyer Co",
+      "leitwegId": "991-12345-06",
+      "identifiers": []
+    },
+    "lines": [
+      {
+        "lineId": "1",
+        "itemName": "Software License Q1",
+        "quantity": 5,
+        "unit": "C62",
+        "price": 199.00,
+        "taxRate": 19,
+        "lineNetAmount": 995.00,
+        "classifications": [],
+        "attributes": [],
+        "allowanceCharges": []
+      }
+    ],
+    "taxBreakdowns": [
+      {"taxableAmount": 995.00, "taxAmount": 189.05, "categoryCode": "S", "rate": 19}
+    ],
+    "allowanceCharges": [],
+    "paymentMeans": [],
+    "precedingInvoiceReferences": [],
+    "supportingDocuments": [],
+    "lineExtensionAmount": 995.00,
+    "taxExclusiveAmount": 995.00,
+    "taxAmount": 189.05,
+    "taxInclusiveAmount": 1184.05,
+    "payableAmount": 1184.05
+  },
+  "validationResult": {
+    "valid": true,
+    "errors": [],
+    "kositResult": {
+      "valid": true,
+      "errors": []
+    }
+  }
+}
