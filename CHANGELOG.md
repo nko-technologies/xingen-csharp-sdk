@@ -16,6 +16,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `InvoiceSubmission.PartyInput` gained an `Address` property (new `InvoiceSubmission.AddressInput`
   record: `StreetName`/`City`/`PostalZone`/`CountryCode`) — the backend now rejects a party with no
   postal address on every profile, and `SubmitAsync` had no way to supply one.
+- `SubmitAsync` reaches full parity with the backend's domain model, so every invoice type it can
+  validate can now also be submitted as structured JSON. New on `InvoiceSubmission`: `DueDate`,
+  `TaxPointDate`, `TaxCurrencyCode`, `PaymentTermsNote`, the BT-11..BT-19 reference properties,
+  `Notes`, `PrecedingInvoiceReferences`, `SupportingDocuments`, `DeliveryPeriodStart`/`End`,
+  `InvoicePeriod`, `Delivery`, `Payee`, `TaxRepresentative`, `PaymentMeans`, and
+  `AllowanceCharges`. New on `PartyInput`: `RegistrationName`, `TaxRegistrationId`,
+  `LegalRegistrationId`/`SchemeId`, `AdditionalLegalInfo`, `Contact` (new `ContactInput`),
+  `Identifiers` (new `PartyIdentifierInput`). New on `AddressInput`: `AdditionalStreetName`,
+  `AddressLine3`, `CountrySubdivision`. New on `LineInput`: `ItemName`, `Note`, object/order/
+  accounting references, seller/buyer/standard item ids, `OriginCountryCode`, `Classifications`
+  (new `ItemClassificationInput`), `Attributes` (new `ItemAttributeInput`), `GrossPrice`,
+  `PriceDiscount`, `PriceBaseQuantity`/`Unit`, `TaxCategoryCode`, `ExemptionReason`/`Code`,
+  `Period` (new `InvoicePeriodInput`), and `AllowanceCharges` (new
+  `LineAllowanceChargeInput`). New top-level `PaymentMeansInput` and `AllowanceChargeInput`
+  records.
 
 ## [0.1.0]
 

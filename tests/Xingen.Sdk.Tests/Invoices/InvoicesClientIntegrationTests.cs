@@ -71,8 +71,124 @@ public class InvoicesClientIntegrationTests : IAsyncLifetime
 
         Assert.Contains("\"invoiceNumber\":\"INV-2024-0042\"", capturedBody);
         Assert.Contains("\"validationProfile\":\"XRECHNUNG\"", capturedBody);
-        Assert.Contains("\"supplier\":{\"name\":\"Acme GmbH\",\"vatId\":\"DE123456789\"", capturedBody);
+        Assert.Contains("\"name\":\"Acme GmbH\"", capturedBody);
+        Assert.Contains("\"vatId\":\"DE123456789\"", capturedBody);
         Assert.Contains("\"lines\":[{\"description\":\"Software License Q1\"", capturedBody);
+    }
+
+    [Fact]
+    public async Task SubmitSendsFullDomainModelFieldsWhenPresent()
+    {
+        string? capturedBody = null;
+        _server.MapHandler("/v1/invoices", async context =>
+        {
+            capturedBody = await context.ReadBodyAsync();
+            await context.RespondAsync(202, "{\"id\":\"inv_full\",\"status\":\"processing\"}");
+        });
+
+        var submission = new InvoiceSubmission
+        {
+            InvoiceNumber = "INV-2024-0099",
+            IssueDate = new DateOnly(2024, 3, 15),
+            DueDate = new DateOnly(2024, 4, 14),
+            PaymentTermsNote = "Net 30",
+            Currency = "EUR",
+            ValidationProfile = ValidationProfile.EN16931,
+            OrderReference = "PO-1",
+            Notes = ["Thank you for your business"],
+            PrecedingInvoiceReferences =
+            [
+                new InvoiceSubmission.PrecedingInvoiceReferenceInput { Id = "INV-2024-0001", IssueDate = new DateOnly(2024, 1, 1) },
+            ],
+            SupportingDocuments =
+            [
+                new InvoiceSubmission.SupportingDocumentInput { Id = "DOC-1", TypeCode = "50", Description = "Delivery note" },
+            ],
+            InvoicePeriod = new InvoiceSubmission.InvoicePeriodInput
+            {
+                StartDate = new DateOnly(2024, 3, 1), EndDate = new DateOnly(2024, 3, 31),
+            },
+            Delivery = new InvoiceSubmission.DeliveryInput
+            {
+                PartyName = "Warehouse Co",
+                Address = new InvoiceSubmission.AddressInput { City = "Hamburg", CountryCode = "DE" },
+            },
+            Supplier = new InvoiceSubmission.PartyInput
+            {
+                Name = "Acme GmbH",
+                RegistrationName = "Acme GmbH Legal",
+                VatId = "DE123456789",
+                Address = new InvoiceSubmission.AddressInput { City = "Berlin", CountryCode = "DE" },
+                Contact = new InvoiceSubmission.ContactInput { Name = "Jane Doe", Email = "jane@acme.example" },
+                Identifiers = [new InvoiceSubmission.PartyIdentifierInput { Id = "DE98ZZZ09999999999", SchemeId = "SEPA" }],
+            },
+            Buyer = new InvoiceSubmission.PartyInput
+            {
+                Name = "Buyer Co",
+                Address = new InvoiceSubmission.AddressInput { CountryCode = "DE" },
+            },
+            Payee = new InvoiceSubmission.PartyInput
+            {
+                Name = "Payee GmbH",
+                Address = new InvoiceSubmission.AddressInput { CountryCode = "DE" },
+            },
+            Lines =
+            [
+                new InvoiceSubmission.LineInput
+                {
+                    Description = "Consulting services",
+                    ItemName = "Consulting",
+                    Quantity = 1m,
+                    Unit = "C62",
+                    Price = 500.00m,
+                    TaxRate = 19m,
+                    Classifications = [new InvoiceSubmission.ItemClassificationInput { Code = "1234" }],
+                    Attributes = [new InvoiceSubmission.ItemAttributeInput { Name = "Color", Value = "Blue" }],
+                },
+                new InvoiceSubmission.LineInput
+                {
+                    Description = "Export sale",
+                    Quantity = 1m,
+                    Unit = "C62",
+                    Price = 100.00m,
+                    TaxRate = 0m,
+                    TaxCategoryCode = "G",
+                    ExemptionReason = "Export outside the EU",
+                    ExemptionReasonCode = "VATEX-EU-G",
+                },
+            ],
+            PaymentMeans =
+            [
+                new InvoiceSubmission.PaymentMeansInput { TypeCode = "58", CreditTransferAccountId = "DE89370400440532013000" },
+            ],
+            AllowanceCharges =
+            [
+                new InvoiceSubmission.AllowanceChargeInput { Charge = true, Amount = 5.00m, VatCategoryCode = "S", VatRate = 19m },
+            ],
+        };
+
+        var result = await _client.Invoices.SubmitAsync(submission);
+
+        Assert.Equal("inv_full", result.Id);
+
+        Assert.Contains("\"dueDate\":\"2024-04-14\"", capturedBody);
+        Assert.Contains("\"paymentTermsNote\":\"Net 30\"", capturedBody);
+        Assert.Contains("\"orderReference\":\"PO-1\"", capturedBody);
+        Assert.Contains("\"notes\":[\"Thank you for your business\"]", capturedBody);
+        Assert.Contains("\"precedingInvoiceReferences\":[{\"id\":\"INV-2024-0001\"", capturedBody);
+        Assert.Contains("\"supportingDocuments\":[{\"id\":\"DOC-1\"", capturedBody);
+        Assert.Contains("\"invoicePeriod\":{\"startDate\":\"2024-03-01\"", capturedBody);
+        Assert.Contains("\"delivery\":{\"partyName\":\"Warehouse Co\"", capturedBody);
+        Assert.Contains("\"registrationName\":\"Acme GmbH Legal\"", capturedBody);
+        Assert.Contains("\"identifiers\":[{\"id\":\"DE98ZZZ09999999999\",\"schemeId\":\"SEPA\"}]", capturedBody);
+        Assert.Contains("\"payee\":{\"name\":\"Payee GmbH\"", capturedBody);
+        Assert.Contains("\"classifications\":[{\"code\":\"1234\"", capturedBody);
+        Assert.Contains("\"attributes\":[{\"name\":\"Color\",\"value\":\"Blue\"}]", capturedBody);
+        Assert.Contains("\"taxCategoryCode\":\"G\"", capturedBody);
+        Assert.Contains("\"exemptionReason\":\"Export outside the EU\"", capturedBody);
+        Assert.Contains("\"exemptionReasonCode\":\"VATEX-EU-G\"", capturedBody);
+        Assert.Contains("\"paymentMeans\":[{\"typeCode\":\"58\"", capturedBody);
+        Assert.Contains("\"allowanceCharges\":[{\"charge\":true,\"amount\":5.00", capturedBody);
     }
 
     [Fact]
