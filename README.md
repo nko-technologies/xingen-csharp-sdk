@@ -95,8 +95,16 @@ var submission = new InvoiceSubmission
     Currency = "EUR",
     BuyerReference = "991-12345-06",
     ValidationProfile = ValidationProfile.XRECHNUNG,
-    Supplier = new InvoiceSubmission.PartyInput { Name = "Acme GmbH", VatId = "DE123456789" },
-    Buyer = new InvoiceSubmission.PartyInput { Name = "Buyer Co", LeitwegId = "991-12345-06" },
+    Supplier = new InvoiceSubmission.PartyInput
+    {
+        Name = "Acme GmbH", VatId = "DE123456789",
+        Address = new InvoiceSubmission.AddressInput { City = "Berlin", CountryCode = "DE" },
+    },
+    Buyer = new InvoiceSubmission.PartyInput
+    {
+        Name = "Buyer Co", LeitwegId = "991-12345-06",
+        Address = new InvoiceSubmission.AddressInput { CountryCode = "DE" },
+    },
     Lines =
     [
         new InvoiceSubmission.LineInput

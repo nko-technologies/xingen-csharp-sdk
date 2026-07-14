@@ -27,6 +27,18 @@ public sealed record InvoiceSubmission
         public required string Name { get; init; }
         public string? VatId { get; init; }
         public string? LeitwegId { get; init; }
+
+        /// <summary>Postal address (BG-5/BG-8) — mandatory for every profile; the backend rejects a party with no address.</summary>
+        public AddressInput? Address { get; init; }
+    }
+
+    /// <summary>Postal address (BG-5/BG-8) of a <see cref="PartyInput"/>. Only <see cref="CountryCode"/> is mandatory server-side.</summary>
+    public sealed record AddressInput
+    {
+        public string? StreetName { get; init; }
+        public string? City { get; init; }
+        public string? PostalZone { get; init; }
+        public string? CountryCode { get; init; }
     }
 
     /// <summary>A single invoice line, as submitted with a new invoice.</summary>

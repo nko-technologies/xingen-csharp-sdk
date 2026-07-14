@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   (`PATCH /v1/invoices/{id}`); accepts either a raw JSON string or a `Dictionary<string, object?>`.
 - `GetAutoFilledFieldsAsync` — list the invoice fields the backend fills in automatically, per
   validation profile (`GET /v1/invoices/auto-filled-fields`), via the new `AutoFilledField` record.
+- `InvoiceSubmission.PartyInput` gained an `Address` property (new `InvoiceSubmission.AddressInput`
+  record: `StreetName`/`City`/`PostalZone`/`CountryCode`) — the backend now rejects a party with no
+  postal address on every profile, and `SubmitAsync` had no way to supply one.
 
 ## [0.1.0]
 
