@@ -1,3 +1,4 @@
+using System.Text;
 using Xingen.Sdk.Http;
 using Xingen.Sdk.Invoices;
 using Xingen.Sdk.Models;
@@ -55,6 +56,23 @@ public class InvoiceRecordDeserializationTests
         Assert.Equal("BR-01", error.Code);
         Assert.Equal(ValidationLayer.CORE, error.Layer);
         Assert.Equal(Severity.ERROR, error.Severity);
+    }
+
+    [Fact]
+    public void DecodesExtractionTierForAiPdfExtractionsAndLeavesItNullOtherwise()
+    {
+        const string aiExtracted = "{\"id\":\"inv_ai\",\"status\":\"validated\",\"createdAt\":\"2026-07-08T09:30:00Z\","
+            + "\"validationProfile\":\"EN16931\",\"invoiceFormat\":\"PDF_AI\",\"sandbox\":false,"
+            + "\"extractionTier\":\"ACCURATE\",\"canonicalJson\":null,\"validationResult\":null}";
+
+        var record = _codec.Decode<InvoiceRecord>(Encoding.UTF8.GetBytes(aiExtracted));
+
+        Assert.Equal("PDF_AI", record.InvoiceFormat);
+        Assert.Equal("ACCURATE", record.ExtractionTier);
+
+        var nonAiRecord = _codec.Decode<InvoiceRecord>(Encoding.UTF8.GetBytes(
+            aiExtracted.Replace("\"extractionTier\":\"ACCURATE\",", "")));
+        Assert.Null(nonAiRecord.ExtractionTier);
     }
 
     private async Task<InvoiceRecord> Decode(string fixtureName)

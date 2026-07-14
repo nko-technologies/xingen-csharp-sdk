@@ -155,6 +155,79 @@ public class InvoicesClientIntegrationTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ExtractInvoiceSendsProfileAndTierAsQueryParamsAndFileAsMultipartField()
+    {
+        string? capturedBody = null;
+        string? capturedQuery = null;
+        string? capturedContentType = null;
+        _server.MapHandler("/v1/invoices/extract", async context =>
+        {
+            capturedQuery = context.Request.Url!.Query.TrimStart('?');
+            capturedContentType = context.Request.ContentType;
+            capturedBody = await context.ReadBodyAsync();
+            await context.RespondAsync(202, "{\"id\":\"inv_789\",\"status\":\"processing\"}");
+        });
+
+        var result = await _client.Invoices.ExtractInvoiceAsync(
+            "invoice.pdf", "%PDF-1.4"u8.ToArray(), ValidationProfile.EN16931, ExtractionModelTier.ACCURATE);
+
+        Assert.Equal("inv_789", result.Id);
+        Assert.Equal("profile=EN16931&tier=ACCURATE", capturedQuery);
+        Assert.StartsWith("multipart/form-data; boundary=", capturedContentType);
+        Assert.Contains("name=file; filename=invoice.pdf", capturedBody);
+        // the gotcha this test guards against: profile/tier must never be sent as form fields
+        Assert.DoesNotContain("name=profile", capturedBody);
+        Assert.DoesNotContain("name=tier", capturedBody);
+    }
+
+    [Fact]
+    public async Task PatchInvoiceSendsMergePatchAndDecodesUpdatedRecord()
+    {
+        string? capturedMethod = null;
+        string? capturedBody = null;
+        _server.MapHandler("/v1/invoices/inv_01HXYZ", async context =>
+        {
+            capturedMethod = context.Request.HttpMethod;
+            capturedBody = await context.ReadBodyAsync();
+            await context.RespondAsync(200, Fixture);
+        });
+
+        var record = await _client.Invoices.PatchInvoiceAsync("inv_01HXYZ", new Dictionary<string, object?> { ["currency"] = "USD" });
+
+        Assert.Equal("PATCH", capturedMethod);
+        Assert.Equal("{\"currency\":\"USD\"}", capturedBody);
+        Assert.Equal("inv_01HXYZ", record.Id);
+    }
+
+    [Fact]
+    public async Task PatchInvoiceSendsRawJsonBodyVerbatim()
+    {
+        string? capturedBody = null;
+        _server.MapHandler("/v1/invoices/inv_01HXYZ", async context =>
+        {
+            capturedBody = await context.ReadBodyAsync();
+            await context.RespondAsync(200, Fixture);
+        });
+
+        await _client.Invoices.PatchInvoiceAsync("inv_01HXYZ", "{\"currency\":\"USD\"}");
+
+        Assert.Equal("{\"currency\":\"USD\"}", capturedBody);
+    }
+
+    [Fact]
+    public async Task GetAutoFilledFieldsDecodesMapByProfile()
+    {
+        _server.MapHandler("/v1/invoices/auto-filled-fields", context => context.RespondAsync(200,
+            "{\"EN16931\":[{\"field\":\"typeCode\",\"value\":\"380\",\"reason\":\"Defaults to a commercial invoice.\"}]}"));
+
+        var fields = await _client.Invoices.GetAutoFilledFieldsAsync();
+
+        Assert.Single(fields["EN16931"]);
+        Assert.Equal("typeCode", fields["EN16931"][0].Field);
+        Assert.Equal("380", fields["EN16931"][0].Value);
+    }
+
+    [Fact]
     public async Task DownloadPdfReturnsRawBytesWithPdfAccept()
     {
         byte[] pdfBytes = [0x25, 0x50, 0x44, 0x46]; // "%PDF"

@@ -6,8 +6,9 @@ ZUGFeRD, and SAP IDoc/OData invoices for validation against EN16931, XRechnung, 
 Targets .NET 8+. Built on `System.Net.Http.HttpClient` and `System.Text.Json` — no third-party
 dependencies.
 
-> Status: v0.1, covering invoice submission/validation and API key management. Contacts and
-> dashboard/user endpoints are not exposed (they're Firebase-auth-only on the backend).
+> Status: v0.2, covering invoice submission/validation, AI PDF extraction, invoice correction, and
+> API key management. Contacts and dashboard/user endpoints are not exposed (they're
+> Firebase-auth-only on the backend).
 
 ## Install
 
@@ -113,6 +114,39 @@ a `Dictionary<string, object>` rather than a fully typed model:
 
 ```csharp
 await client.Invoices.SubmitODataAsync(rawODataJson, ValidationProfile.EN16931);
+```
+
+## Extract an invoice from a PDF (AI)
+
+Upload a plain invoice PDF — including scanned/image-based PDFs — and let the backend extract
+structured fields. Works exactly like the other submit endpoints: async, so use
+`ExtractInvoiceAndWaitAsync` or the low-level `ExtractInvoiceAsync`/`GetAsync` pair.
+
+```csharp
+var result = await client.Invoices.ExtractInvoiceAndWaitAsync(
+    "scanned-invoice.pdf",
+    ValidationProfile.EN16931,
+    ExtractionModelTier.FAST); // or ACCURATE — higher accuracy, Pro subscription required
+```
+
+If the extraction missed a field or validation flagged something, correct it with a JSON
+merge-patch (RFC 7386) and re-validate synchronously — only invoices that finished processing
+(`Validated` or `FailedValidation`) can be corrected. Array fields (`lines`, `paymentMeans`,
+`allowanceCharges`, `taxBreakdowns`) are replaced wholesale when present in the patch:
+
+```csharp
+var corrected = await client.Invoices.PatchInvoiceAsync(result.Id!, new Dictionary<string, object?>
+{
+    ["currency"] = "EUR",
+    ["buyerReference"] = "991-12345-06",
+});
+```
+
+To find out which fields the backend fills in automatically per profile (so you know what *not*
+to prompt the user for):
+
+```csharp
+Dictionary<string, List<AutoFilledField>> autoFilled = await client.Invoices.GetAutoFilledFieldsAsync();
 ```
 
 ## List and retrieve invoices

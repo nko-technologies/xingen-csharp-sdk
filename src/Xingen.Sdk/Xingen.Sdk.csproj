@@ -12,7 +12,7 @@
 
   <PropertyGroup>
     <PackageId>Xingen.Sdk</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Authors>Xingen</Authors>
     <Description>Client SDK for the Xingen e-invoice validation API — submit UBL, CII, ZUGFeRD, and SAP IDoc/OData invoices for validation against EN16931, XRechnung, and Peppol.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

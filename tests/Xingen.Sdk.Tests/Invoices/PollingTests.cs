@@ -79,6 +79,25 @@ public class PollingTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task ExtractInvoiceAndWaitPollsUntilValidated()
+    {
+        _server.MapHandler("/v1/invoices/extract", context =>
+            context.RespondAsync(202, "{\"id\":\"inv_5\",\"status\":\"processing\"}"));
+        var pollCount = 0;
+        _server.MapHandler("/v1/invoices/inv_5", async context =>
+        {
+            var terminal = Interlocked.Increment(ref pollCount) >= 3;
+            await context.RespondAsync(200, RecordJson("inv_5", terminal ? "validated" : "processing", true));
+        });
+
+        var result = await _client.ExtractInvoiceAndWaitAsync(
+            "invoice.pdf", "%PDF-1.4"u8.ToArray(), ValidationProfile.EN16931, ExtractionModelTier.FAST, FastPoll);
+
+        Assert.Equal(InvoiceStatus.Validated, result.Status);
+        Assert.True(result.ValidationResult!.Valid);
+    }
+
+    [Fact]
     public async Task TimesOutWithPartialResultWhenDeadlineElapses()
     {
         _server.MapHandler("/v1/invoices", context => context.RespondAsync(202, "{\"id\":\"inv_3\",\"status\":\"processing\"}"));

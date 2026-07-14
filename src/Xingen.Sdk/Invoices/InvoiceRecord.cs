@@ -28,4 +28,12 @@ public sealed record InvoiceRecord
     public string? UploadedBy { get; init; }
     public bool Sandbox { get; init; }
     public Guid? ApiKeyId { get; init; }
+
+    /// <summary>
+    /// Extraction quality tier used (<c>"FAST"</c>/<c>"ACCURATE"</c>) — only set for AI PDF
+    /// extractions (<see cref="InvoiceFormat"/> <c>== "PDF_AI"</c>). Plain nullable string, not a
+    /// typed enum, to match how sibling fields like <see cref="InvoiceFormat"/> and
+    /// <see cref="ValidationProfile"/> are already typed on this record.
+    /// </summary>
+    public string? ExtractionTier { get; init; }
 }
